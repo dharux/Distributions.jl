@@ -121,13 +121,18 @@ macro distr_support(D, lb, ub)
     D_has_constantbounds = (isa(ub, Number) || ub == :Inf) &&
                            (isa(lb, Number) || lb == :(-Inf))
 
-    paramdecl = D_has_constantbounds ? :(d::Union{$D, Type{<:$D}}) : :(d::$D)
-
-    # overall
-    esc(quote
-        Base.minimum($(paramdecl)) = $lb
-        Base.maximum($(paramdecl)) = $ub
-    end)
+    if D_has_constantbounds 
+        # need to convert the constanst to the type of the distribution for type stability
+        esc(quote
+            Base.minimum(d::$D{T}) where {T} = T($lb)
+            Base.maximum(d::$D{T}) where {T} = T($ub)
+        end)
+    else
+        esc(quote
+            Base.minimum(d::$D) = $lb
+            Base.maximum(d::$D) = $ub
+        end)
+    end
 end
 
 
