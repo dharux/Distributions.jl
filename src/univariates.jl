@@ -118,19 +118,22 @@ struct FiniteSupport{T} end
 ## macros to declare support
 
 macro distr_support(D, lb, ub)
-    D_has_constantbounds = (isa(ub, Number) || ub == :Inf) &&
-                           (isa(lb, Number) || lb == :(-Inf))
+    D_has_constant_in_bounds = (isa(ub, Number) || ub == :Inf) ||
+                               (isa(lb, Number) || lb == :(-Inf))
 
-    if D_has_constantbounds 
+    if D_has_constant_in_bounds && (D <: ContinuousUnivariateDistribution) && !isconcretetype(D)
         # need to convert the constanst to the type of the distribution for type stability
         esc(quote
             Base.minimum(d::$D{T}) where {T} = T($lb)
             Base.maximum(d::$D{T}) where {T} = T($ub)
         end)
     else
+        D_has_only_constant_bounds = (isa(ub, Number) || ub == :Inf) &&
+                                     (isa(lb, Number) || lb == :(-Inf))
+        paramdecl = D_has_only_constant_bounds ? :(d::Union{$D, Type{<:$D}}) : :(d::$D)
         esc(quote
-            Base.minimum(d::$D) = $lb
-            Base.maximum(d::$D) = $ub
+            Base.minimum(d::$(paramdecl)) = $lb
+            Base.maximum(d::$(paramdecl)) = $ub
         end)
     end
 end
