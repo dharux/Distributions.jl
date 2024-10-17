@@ -124,8 +124,8 @@ macro distr_support(D, lb, ub)
     if D_has_constant_in_bounds && (eval(D) <: ContinuousUnivariateDistribution) && !isconcretetype(eval(D))
         # need to convert the constanst to the type of the distribution for type stability
         esc(quote
-            Base.minimum(d::$D{T}) where {T} = T($lb)
-            Base.maximum(d::$D{T}) where {T} = T($ub)
+            Base.minimum(d::$D{T}) where {T} = float(T)($lb)
+            Base.maximum(d::$D{T}) where {T} = float(T)($ub)
         end)
     else
         D_has_only_constant_bounds = (isa(ub, Number) || ub == :Inf) &&

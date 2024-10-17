@@ -154,7 +154,7 @@ function randnt(rng::AbstractRNG, lb::Float64, ub::Float64, tp::Float64)
 
     else
         span = ub - lb
-        if lb > 0 && span > 2.0 / (lb + sqrt(lb^2 + 4.0)) * exp((lb^2 - lb * sqrt(lb^2 + 4.0)) / 4.0)
+        if lb > 0. && span > 2.0 / (lb + sqrt(lb^2 + 4.0)) * exp((lb^2 - lb * sqrt(lb^2 + 4.0)) / 4.0)
             a = (lb + sqrt(lb^2 + 4.0))/2.0
             while true
                 r = rand(rng, Exponential(1.0 / a)) + lb
@@ -163,7 +163,7 @@ function randnt(rng::AbstractRNG, lb::Float64, ub::Float64, tp::Float64)
                     return r
                 end
             end
-        elseif ub < 0 && ub - lb > 2.0 / (-ub + sqrt(ub^2 + 4.0)) * exp((ub^2 + ub * sqrt(ub^2 + 4.0)) / 4.0)
+        elseif ub < 0. && ub - lb > 2.0 / (-ub + sqrt(ub^2 + 4.0)) * exp((ub^2 + ub * sqrt(ub^2 + 4.0)) / 4.0)
             a = (-ub + sqrt(ub^2 + 4.0)) / 2.0
             while true
                 r = rand(rng, Exponential(1.0 / a)) - ub
@@ -176,12 +176,61 @@ function randnt(rng::AbstractRNG, lb::Float64, ub::Float64, tp::Float64)
             while true
                 r = lb + rand(rng) * (ub - lb)
                 u = rand(rng)
-                if lb > 0
+                if lb > 0.
                     rho = exp((lb^2 - r^2) * 0.5)
-                elseif ub < 0
+                elseif ub < 0.
                     rho = exp((ub^2 - r^2) * 0.5)
                 else
                     rho = exp(-r^2 * 0.5)
+                end
+                if u < rho
+                    return r
+                end
+            end
+        end
+    end
+end
+
+
+function randnt(rng::AbstractRNG, lb::Float32, ub::Float32, tp::Float32)
+    local r::Float32
+    if tp > 0.3f0   # has considerable chance of falling in [lb, ub]
+        r = randn(rng, Float32)
+        while r < lb || r > ub
+            r = randn(rng, Float32)
+        end
+        return r
+
+    else
+        span = ub - lb
+        if lb > 0f0 && span > 2.0f0 / (lb + sqrt(lb^2 + 4.0f0)) * exp((lb^2 - lb * sqrt(lb^2 + 4.0f0)) / 4.0f0)
+            a = (lb + sqrt(lb^2 + 4.0f0))/2.0f0
+            while true
+                r = rand(rng, Exponential(1.0f0 / a)) + lb
+                u = rand(rng, Float32)
+                if u < exp(-0.5f0 * (r - a)^2) && r < ub
+                    return r
+                end
+            end
+        elseif ub < 0f0 && ub - lb > 2.0f0 / (-ub + sqrt(ub^2 + 4.0f0)) * exp((ub^2 + ub * sqrt(ub^2 + 4.0f0)) / 4.0f0)
+            a = (-ub + sqrt(ub^2 + 4.0f0)) / 2.0f0
+            while true
+                r = rand(rng, Exponential(1.0f0 / a)) - ub
+                u = rand(rng, Float32)
+                if u < exp(-0.5f0 * (r - a)^2) && r < -lb
+                    return -r
+                end
+            end
+        else
+            while true
+                r = lb + rand(rng, Float32) * (ub - lb)
+                u = rand(rng, Float32)
+                if lb > 0f0
+                    rho = exp((lb^2 - r^2) * 0.5f0)
+                elseif ub < 0f0
+                    rho = exp((ub^2 - r^2) * 0.5f0)
+                else
+                    rho = exp(-r^2 * 0.5f0)
                 end
                 if u < rho
                     return r
