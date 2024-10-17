@@ -125,8 +125,8 @@ macro distr_support(D, lb, ub)
 
     # overall
     esc(quote
-        Base.minimum($(paramdecl)) where {T} = T($lb)
-        Base.maximum($(paramdecl)) where {T} = T($ub)
+        Base.minimum($(paramdecl)) = $lb
+        Base.maximum($(paramdecl)) = $ub
     end)
 end
 
