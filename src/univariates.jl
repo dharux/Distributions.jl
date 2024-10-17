@@ -132,8 +132,8 @@ macro distr_support(D, lb, ub)
                                      (isa(lb, Number) || lb == :(-Inf))
         paramdecl = D_has_only_constant_bounds ? :(d::Union{$D, Type{<:$D}}) : :(d::$D)
         esc(quote
-            Base.minimum(d::$(paramdecl)) = $lb
-            Base.maximum(d::$(paramdecl)) = $ub
+            Base.minimum($(paramdecl)) = $lb
+            Base.maximum($(paramdecl)) = $ub
         end)
     end
 end
